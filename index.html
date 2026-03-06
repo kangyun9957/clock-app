@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>시계</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Status Bar spacer -->
+  <div class="status-bar-spacer"></div>
+
+  <!-- World Clock Tab -->
+  <div id="tab-worldclock" class="tab-content active">
+    <div class="nav-bar">
+      <button class="nav-btn left" id="worldclock-edit-btn">편집</button>
+      <h1 class="nav-title">세계 시계</h1>
+      <button class="nav-btn right" id="worldclock-add-btn">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 1v20M1 11h20" stroke="#FF9F0A" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="scroll-content" id="worldclock-list">
+      <!-- World clock items inserted by JS -->
+    </div>
+  </div>
+
+  <!-- Alarm Tab -->
+  <div id="tab-alarm" class="tab-content">
+    <div class="nav-bar">
+      <button class="nav-btn left" id="alarm-edit-btn">편집</button>
+      <h1 class="nav-title">알람</h1>
+      <button class="nav-btn right" id="alarm-add-btn">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 1v20M1 11h20" stroke="#FF9F0A" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="scroll-content" id="alarm-list">
+      <!-- Alarm items inserted by JS -->
+    </div>
+  </div>
+
+  <!-- Stopwatch Tab -->
+  <div id="tab-stopwatch" class="tab-content">
+    <div class="nav-bar">
+      <h1 class="nav-title">스톱워치</h1>
+    </div>
+    <div class="stopwatch-container">
+      <div class="stopwatch-display" id="stopwatch-display">00:00<span class="stopwatch-fraction">.00</span></div>
+      <div class="stopwatch-controls">
+        <button class="stopwatch-btn btn-dark" id="stopwatch-lap-btn">랩</button>
+        <button class="stopwatch-btn btn-green" id="stopwatch-start-btn">시작</button>
+      </div>
+      <div class="lap-list" id="lap-list">
+        <!-- Lap items inserted by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Timer Tab -->
+  <div id="tab-timer" class="tab-content">
+    <div class="nav-bar">
+      <h1 class="nav-title">타이머</h1>
+    </div>
+    <div class="timer-container">
+      <div class="timer-picker-wrapper" id="timer-picker-wrapper">
+        <div class="timer-picker">
+          <div class="picker-column" id="picker-hours"></div>
+          <div class="picker-label">시간</div>
+          <div class="picker-column" id="picker-minutes"></div>
+          <div class="picker-label">분</div>
+          <div class="picker-column" id="picker-seconds"></div>
+          <div class="picker-label">초</div>
+        </div>
+        <div class="picker-highlight"></div>
+      </div>
+      <div class="timer-ring-wrapper" id="timer-ring-wrapper" style="display:none;">
+        <div class="timer-ring-container">
+          <svg class="timer-ring" viewBox="0 0 200 200">
+            <circle class="timer-ring-bg" cx="100" cy="100" r="90" />
+            <circle class="timer-ring-progress" cx="100" cy="100" r="90" id="timer-ring-progress" />
+          </svg>
+          <div class="timer-ring-display" id="timer-display">00:00:00</div>
+        </div>
+      </div>
+      <div class="timer-controls">
+        <button class="stopwatch-btn btn-dark" id="timer-cancel-btn">취소</button>
+        <button class="stopwatch-btn btn-green" id="timer-start-btn">시작</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alarm Add Modal -->
+  <div class="modal-overlay" id="alarm-modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-nav">
+        <button class="nav-btn left" id="alarm-cancel-btn">취소</button>
+        <h1 class="nav-title">알람 추가</h1>
+        <button class="nav-btn right save-btn" id="alarm-save-btn">저장</button>
+      </div>
+      <div class="alarm-picker-wrapper">
+        <div class="timer-picker">
+          <div class="picker-column alarm-picker-col" id="alarm-picker-ampm"></div>
+          <div class="picker-column alarm-picker-col" id="alarm-picker-hours"></div>
+          <div class="picker-label alarm-picker-sep">:</div>
+          <div class="picker-column alarm-picker-col" id="alarm-picker-minutes"></div>
+        </div>
+        <div class="picker-highlight"></div>
+      </div>
+      <div class="alarm-options">
+        <div class="alarm-option-row">
+          <span>반복</span><span class="alarm-option-value">안 함 ›</span>
+        </div>
+        <div class="alarm-option-row">
+          <span>레이블</span>
+          <input type="text" class="alarm-label-input" id="alarm-label-input" value="알람" />
+        </div>
+        <div class="alarm-option-row">
+          <span>사운드</span><span class="alarm-option-value">전파 탐지기 ›</span>
+        </div>
+        <div class="alarm-option-row">
+          <span>다시 알림</span>
+          <label class="ios-switch"><input type="checkbox" checked /><span class="slider"></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- World Clock Add Modal -->
+  <div class="modal-overlay" id="worldclock-modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-nav">
+        <button class="nav-btn left" id="worldclock-cancel-btn">취소</button>
+        <h1 class="nav-title">도시 선택</h1>
+        <div></div>
+      </div>
+      <div class="search-bar">
+        <input type="text" placeholder="검색" id="city-search" />
+      </div>
+      <div class="city-list" id="city-list"></div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-item active" data-tab="worldclock">
+      <svg viewBox="0 0 25 25" class="tab-icon"><circle cx="12.5" cy="12.5" r="11" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12.5 3v9.5l5 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="12.5" cy="12.5" r="1.2" fill="currentColor"/></svg>
+      <span>세계 시계</span>
+    </button>
+    <button class="tab-item" data-tab="alarm">
+      <svg viewBox="0 0 25 25" class="tab-icon"><path d="M12.5 3C8.08 3 4.5 6.58 4.5 11v4l-2 2.5v1h20v-1l-2-2.5v-4c0-4.42-3.58-8-8-8z" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 20.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+      <span>알람</span>
+    </button>
+    <button class="tab-item" data-tab="stopwatch">
+      <svg viewBox="0 0 25 25" class="tab-icon"><circle cx="12.5" cy="13.5" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12.5 7v6.5l4 2.5M10.5 1h4M12.5 1v3M19 5.5l1.5-1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+      <span>스톱워치</span>
+    </button>
+    <button class="tab-item" data-tab="timer">
+      <svg viewBox="0 0 25 25" class="tab-icon"><circle cx="12.5" cy="12.5" r="11" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M12.5 5v7.5h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>
+      <span>타이머</span>
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

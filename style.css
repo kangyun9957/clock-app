@@ -1,0 +1,721 @@
+/* ============================================
+   iPhone Clock App - Pixel-Perfect Clone
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+:root {
+  --orange: #FF9F0A;
+  --bg: #000000;
+  --card-bg: #1C1C1E;
+  --separator: #38383A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8E8E93;
+  --text-tertiary: #636366;
+  --green: #30D158;
+  --red: #FF453A;
+  --tab-inactive: #8E8E93;
+  --safe-top: env(safe-area-inset-top, 20px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.status-bar-spacer {
+  height: var(--safe-top);
+  min-height: 20px;
+}
+
+/* ============================================
+   Navigation Bar
+   ============================================ */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 8px;
+  min-height: 44px;
+}
+
+.nav-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 0.37px;
+  text-align: left;
+  flex: 1;
+  padding: 8px 0 4px;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--orange);
+  font-size: 17px;
+  padding: 8px 0;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 44px;
+}
+
+.nav-btn.left {
+  text-align: left;
+}
+
+.nav-btn.right {
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.save-btn {
+  font-weight: 600;
+}
+
+/* ============================================
+   Tab Content
+   ============================================ */
+.tab-content {
+  display: none;
+  height: calc(100vh - var(--safe-top) - 83px);
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+.scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 20px;
+}
+
+/* ============================================
+   Tab Bar (Bottom)
+   ============================================ */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  background: rgba(30, 30, 30, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 0 calc(6px + var(--safe-bottom));
+  height: calc(83px + var(--safe-bottom));
+  z-index: 100;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--tab-inactive);
+  font-size: 10px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 0;
+  min-width: 60px;
+}
+
+.tab-item.active {
+  color: var(--orange);
+}
+
+.tab-icon {
+  width: 25px;
+  height: 25px;
+}
+
+/* ============================================
+   World Clock
+   ============================================ */
+.worldclock-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  min-height: 72px;
+}
+
+.worldclock-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.worldclock-offset {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.worldclock-city {
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.5px;
+}
+
+.worldclock-time {
+  font-size: 56px;
+  font-weight: 200;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.worldclock-time .time-ampm {
+  font-size: 24px;
+  font-weight: 300;
+  margin-left: 2px;
+}
+
+/* ============================================
+   Alarm
+   ============================================ */
+.alarm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  min-height: 80px;
+}
+
+.alarm-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.alarm-time-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.alarm-time {
+  font-size: 56px;
+  font-weight: 200;
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+}
+
+.alarm-ampm {
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.alarm-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.alarm-item.disabled .alarm-time,
+.alarm-item.disabled .alarm-ampm,
+.alarm-item.disabled .alarm-label {
+  color: var(--text-tertiary);
+}
+
+/* iOS Toggle Switch */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 31px;
+  flex-shrink: 0;
+}
+
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ios-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #39393D;
+  border-radius: 31px;
+  transition: background 0.3s;
+}
+
+.ios-switch .slider::before {
+  content: '';
+  position: absolute;
+  height: 27px;
+  width: 27px;
+  left: 2px;
+  bottom: 2px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.ios-switch input:checked + .slider {
+  background: var(--green);
+}
+
+.ios-switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* Sleep/Wake section in alarm */
+.alarm-section-header {
+  padding: 24px 16px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alarm-section-header .bed-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--orange);
+}
+
+.alarm-section-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.alarm-section-desc {
+  padding: 0 16px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.alarm-other-header {
+  padding: 32px 16px 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ============================================
+   Stopwatch
+   ============================================ */
+.stopwatch-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;
+}
+
+.stopwatch-display {
+  font-size: 80px;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -2px;
+  padding: 40px 0 30px;
+  text-align: center;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+.stopwatch-fraction {
+  font-size: 80px;
+  font-weight: 200;
+}
+
+.stopwatch-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.stopwatch-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  font-size: 17px;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.stopwatch-btn::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid;
+  border-color: inherit;
+}
+
+.btn-dark {
+  background: #333333;
+  color: var(--text-primary);
+  border-color: #333333;
+}
+
+.btn-green {
+  background: #0A3A1A;
+  color: var(--green);
+  border-color: #0A3A1A;
+}
+
+.btn-red {
+  background: #3A0A0A;
+  color: var(--red);
+  border-color: #3A0A0A;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.lap-list {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.lap-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 0.5px solid var(--separator);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lap-item.best {
+  color: var(--green);
+}
+
+.lap-item.worst {
+  color: var(--red);
+}
+
+/* ============================================
+   Timer
+   ============================================ */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding-top: 20px;
+}
+
+.timer-picker-wrapper {
+  position: relative;
+  width: 100%;
+  height: 216px;
+  overflow: hidden;
+}
+
+.timer-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 0;
+}
+
+.picker-column {
+  height: 216px;
+  width: 70px;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.picker-column::-webkit-scrollbar {
+  display: none;
+}
+
+.picker-item {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+  font-weight: 400;
+  scroll-snap-align: center;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.picker-label {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 0 4px;
+  align-self: center;
+}
+
+.picker-highlight {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  right: 16px;
+  height: 36px;
+  transform: translateY(-50%);
+  border-top: 0.5px solid var(--separator);
+  border-bottom: 0.5px solid var(--separator);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Timer Ring */
+.timer-ring-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 30px;
+}
+
+.timer-ring-container {
+  position: relative;
+  width: 250px;
+  height: 250px;
+}
+
+.timer-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-ring-bg {
+  fill: none;
+  stroke: var(--separator);
+  stroke-width: 4;
+}
+
+.timer-ring-progress {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 565.48;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timer-ring-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 56px;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 20px 24px;
+}
+
+/* ============================================
+   Alarm Modal
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  width: 100%;
+  max-height: 90vh;
+  background: #1C1C1E;
+  border-radius: 14px 14px 0 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(20px + var(--safe-bottom));
+}
+
+.modal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 0.5px solid var(--separator);
+  position: sticky;
+  top: 0;
+  background: #1C1C1E;
+  z-index: 1;
+}
+
+.modal-nav .nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  padding: 0;
+}
+
+.alarm-picker-wrapper {
+  position: relative;
+  height: 216px;
+  overflow: hidden;
+  padding: 0 20px;
+}
+
+.alarm-picker-col {
+  width: 80px;
+}
+
+.alarm-picker-sep {
+  padding: 0 2px;
+  font-size: 23px;
+}
+
+.alarm-options {
+  padding: 0 16px;
+}
+
+.alarm-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 0.5px solid var(--separator);
+  font-size: 17px;
+}
+
+.alarm-option-value {
+  color: var(--text-secondary);
+}
+
+.alarm-label-input {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 17px;
+  text-align: right;
+  font-family: inherit;
+  outline: none;
+  width: 150px;
+}
+
+/* ============================================
+   World Clock Modal
+   ============================================ */
+.search-bar {
+  padding: 0 16px 12px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #2C2C2E;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-family: inherit;
+  outline: none;
+}
+
+.search-bar input::placeholder {
+  color: var(--text-secondary);
+}
+
+.city-list {
+  max-height: 400px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.city-item {
+  padding: 12px 16px;
+  border-bottom: 0.5px solid var(--separator);
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.city-item:active {
+  background: #2C2C2E;
+}
+
+.city-item-name {
+  color: var(--text-primary);
+}
+
+.city-item-country {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ============================================
+   Empty state
+   ============================================ */
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-secondary);
+  font-size: 17px;
+}
+
+/* ============================================
+   Responsive / iPhone-like constraints
+   ============================================ */
+@media (min-width: 500px) {
+  body {
+    max-width: 430px;
+    margin: 0 auto;
+    border-left: 0.5px solid var(--separator);
+    border-right: 0.5px solid var(--separator);
+  }
+  .tab-bar {
+    max-width: 430px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .modal-overlay .modal-content {
+    max-width: 430px;
+  }
+}
