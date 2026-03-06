@@ -1,721 +1,201 @@
-/* ============================================
-   iPhone Clock App - Pixel-Perfect Clone
-   ============================================ */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
-  user-select: none;
+/* === Reset === */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+:root{
+  --orange:#FF9F0A;
+  --bg:#000;
+  --card:#1C1C1E;
+  --sep:rgba(84,84,88,.65);
+  --t1:#FFF;
+  --t2:#8E8E93;
+  --t3:#636366;
+  --green:#30D158;
+  --red:#FF453A;
+  --sat:env(safe-area-inset-top,47px);
+  --sab:env(safe-area-inset-bottom,0px);
 }
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Helvetica Neue',sans-serif;
+  -webkit-font-smoothing:antialiased;font-size:17px}
 
-:root {
-  --orange: #FF9F0A;
-  --bg: #000000;
-  --card-bg: #1C1C1E;
-  --separator: #38383A;
-  --text-primary: #FFFFFF;
-  --text-secondary: #8E8E93;
-  --text-tertiary: #636366;
-  --green: #30D158;
-  --red: #FF453A;
-  --tab-inactive: #8E8E93;
-  --safe-top: env(safe-area-inset-top, 20px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
+/* === Safe Area === */
+.safe-top{height:var(--sat);min-height:47px}
 
-html, body {
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  font-size: 17px;
-  -webkit-font-smoothing: antialiased;
-}
+/* === Header (Large Title style) === */
+.header{padding:0 16px}
+.header-top{display:flex;justify-content:space-between;align-items:center;height:44px}
+.large-title{font-size:34px;font-weight:700;letter-spacing:.37px;padding:0 0 8px}
 
-.status-bar-spacer {
-  height: var(--safe-top);
-  min-height: 20px;
-}
+/* === Buttons === */
+.text-btn{background:none;border:none;font:inherit;font-size:17px;cursor:pointer;padding:0}
+.text-btn.orange{color:var(--orange)}
+.text-btn.bold{font-weight:600}
+.icon-btn{background:none;border:none;color:var(--orange);cursor:pointer;padding:4px;display:flex;align-items:center}
 
-/* ============================================
-   Navigation Bar
-   ============================================ */
-.nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px 8px;
-  min-height: 44px;
-}
+/* === Tabs === */
+.tab-content{display:none;position:absolute;top:0;left:0;right:0;bottom:83px;overflow:hidden;flex-direction:column}
+.tab-content.active{display:flex}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-.nav-title {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: 0.37px;
-  text-align: left;
-  flex: 1;
-  padding: 8px 0 4px;
-}
+/* === Tab Bar === */
+.tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;
+  background:rgba(30,30,30,.88);
+  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-top:.33px solid rgba(255,255,255,.16);
+  padding:5px 0 calc(5px + var(--sab));z-index:100}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;
+  background:none;border:none;color:var(--t2);font-size:10px;font-family:inherit;cursor:pointer;padding:2px 0 0}
+.tab.active{color:var(--orange)}
+.tab-ico{width:24px;height:24px;display:block}
 
-.nav-btn {
-  background: none;
-  border: none;
-  color: var(--orange);
-  font-size: 17px;
-  padding: 8px 0;
-  cursor: pointer;
-  font-family: inherit;
-  min-width: 44px;
-}
+/* ==============================
+   세계 시계
+   ============================== */
+.wc-item{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;margin:0 0;border-bottom:.33px solid var(--sep)}
+.wc-left{}
+.wc-offset{font-size:13px;color:var(--t2);font-weight:400;line-height:1.3}
+.wc-city{font-size:26px;font-weight:300;line-height:1.2;letter-spacing:-.3px}
+.wc-right{text-align:right}
+.wc-time{font-size:60px;font-weight:100;letter-spacing:-1.5px;line-height:1;
+  font-variant-numeric:tabular-nums}
+.wc-ampm{font-size:26px;font-weight:300;vertical-align:super;margin-left:2px}
 
-.nav-btn.left {
-  text-align: left;
-}
+/* ==============================
+   알람
+   ============================== */
+.al-section{padding:20px 16px 6px;display:flex;align-items:center;gap:6px}
+.al-section-ico{width:26px;height:26px;background:var(--orange);border-radius:7px;
+  display:flex;align-items:center;justify-content:center}
+.al-section-ico svg{width:16px;height:16px;color:#000}
+.al-section-title{font-size:20px;font-weight:600}
+.al-section-desc{padding:0 16px 10px;font-size:13px;color:var(--t2);line-height:1.38}
+.al-other-title{padding:28px 16px 6px;font-size:20px;font-weight:600}
 
-.nav-btn.right {
-  text-align: right;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
+.al-item{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 16px;border-bottom:.33px solid var(--sep);min-height:72px}
+.al-left{}
+.al-time{font-size:60px;font-weight:100;letter-spacing:-1.5px;line-height:1;
+  font-variant-numeric:tabular-nums}
+.al-ampm{font-size:26px;font-weight:300;margin-left:2px}
+.al-label{font-size:13px;color:var(--t2);margin-top:1px}
+.al-item.off .al-time,.al-item.off .al-ampm,.al-item.off .al-label{color:var(--t3)}
 
-.save-btn {
-  font-weight: 600;
-}
+/* iOS Toggle */
+.toggle{position:relative;display:block;width:51px;height:31px;flex-shrink:0}
+.toggle input{display:none}
+.toggle-track{display:block;width:51px;height:31px;border-radius:31px;background:#39393D;
+  transition:background .25s;cursor:pointer}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;
+  background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.3);transition:transform .25s}
+.toggle input:checked~.toggle-track{background:var(--green)}
+.toggle input:checked~.toggle-track .toggle-thumb{transform:translateX(20px)}
 
-/* ============================================
-   Tab Content
-   ============================================ */
-.tab-content {
-  display: none;
-  height: calc(100vh - var(--safe-top) - 83px);
-  overflow: hidden;
-  flex-direction: column;
-}
+/* ==============================
+   스톱워치
+   ============================== */
+.sw-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.sw-display-area{display:flex;align-items:center;justify-content:center;
+  padding:60px 0 40px;flex-shrink:0}
+.sw-time{font-size:86px;font-weight:100;font-variant-numeric:tabular-nums;
+  letter-spacing:-2px;line-height:1;
+  font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif}
+.sw-ms{font-size:86px;font-weight:100}
 
-.tab-content.active {
-  display: flex;
-}
+/* Circle Buttons */
+.sw-buttons{display:flex;justify-content:space-between;padding:0 20px;flex-shrink:0}
+.circle-btn-wrap{width:82px;height:82px}
+.circle-btn-ring{width:82px;height:82px;border-radius:50%;padding:3px;
+  background:transparent;border:2px solid #333}
+.circle-btn-ring.green-ring{border-color:#0B3D16}
+.circle-btn-ring.red-ring{border-color:#3D0B0B}
+.circle-btn{width:100%;height:100%;border-radius:50%;border:none;
+  font-size:17px;font-family:inherit;font-weight:500;cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.circle-btn.gray{background:#333;color:var(--t1)}
+.circle-btn.green{background:#0B3D16;color:var(--green)}
+.circle-btn.red{background:#3D0B0B;color:var(--red)}
+.circle-btn:disabled{opacity:.5}
 
-.scroll-content {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 20px;
-}
+/* Lap List */
+.lap-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:16px}
+.lap-row{display:flex;justify-content:space-between;padding:8px 16px;
+  border-top:.33px solid var(--sep);font-size:16px;font-variant-numeric:tabular-nums;
+  font-family:-apple-system,'SF Pro Display','Helvetica Neue',monospace}
+.lap-row.best{color:var(--green)}
+.lap-row.worst{color:var(--red)}
 
-/* ============================================
-   Tab Bar (Bottom)
-   ============================================ */
-.tab-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-start;
-  background: rgba(30, 30, 30, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 0.5px solid rgba(255, 255, 255, 0.15);
-  padding: 6px 0 calc(6px + var(--safe-bottom));
-  height: calc(83px + var(--safe-bottom));
-  z-index: 100;
-}
+/* ==============================
+   타이머
+   ============================== */
+.tm-wrap{display:flex;flex-direction:column;align-items:center;flex:1}
 
-.tab-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  background: none;
-  border: none;
-  color: var(--tab-inactive);
-  font-size: 10px;
-  font-family: inherit;
-  cursor: pointer;
-  padding: 4px 0;
-  min-width: 60px;
-}
-
-.tab-item.active {
-  color: var(--orange);
-}
-
-.tab-icon {
-  width: 25px;
-  height: 25px;
-}
-
-/* ============================================
-   World Clock
-   ============================================ */
-.worldclock-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 0.5px solid var(--separator);
-  min-height: 72px;
-}
-
-.worldclock-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.worldclock-offset {
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-weight: 400;
-}
-
-.worldclock-city {
-  font-size: 28px;
-  font-weight: 300;
-  letter-spacing: -0.5px;
-}
-
-.worldclock-time {
-  font-size: 56px;
-  font-weight: 200;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-
-.worldclock-time .time-ampm {
-  font-size: 24px;
-  font-weight: 300;
-  margin-left: 2px;
-}
-
-/* ============================================
-   Alarm
-   ============================================ */
-.alarm-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 0.5px solid var(--separator);
-  min-height: 80px;
-}
-
-.alarm-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.alarm-time-row {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.alarm-time {
-  font-size: 56px;
-  font-weight: 200;
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-}
-
-.alarm-ampm {
-  font-size: 24px;
-  font-weight: 300;
-}
-
-.alarm-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-
-.alarm-item.disabled .alarm-time,
-.alarm-item.disabled .alarm-ampm,
-.alarm-item.disabled .alarm-label {
-  color: var(--text-tertiary);
-}
-
-/* iOS Toggle Switch */
-.ios-switch {
-  position: relative;
-  display: inline-block;
-  width: 51px;
-  height: 31px;
-  flex-shrink: 0;
-}
-
-.ios-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.ios-switch .slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background: #39393D;
-  border-radius: 31px;
-  transition: background 0.3s;
-}
-
-.ios-switch .slider::before {
-  content: '';
-  position: absolute;
-  height: 27px;
-  width: 27px;
-  left: 2px;
-  bottom: 2px;
-  background: white;
-  border-radius: 50%;
-  transition: transform 0.3s;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.ios-switch input:checked + .slider {
-  background: var(--green);
-}
-
-.ios-switch input:checked + .slider::before {
-  transform: translateX(20px);
-}
-
-/* Sleep/Wake section in alarm */
-.alarm-section-header {
-  padding: 24px 16px 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.alarm-section-header .bed-icon {
-  width: 28px;
-  height: 28px;
-  color: var(--orange);
-}
-
-.alarm-section-title {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.alarm-section-desc {
-  padding: 0 16px 12px;
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.alarm-other-header {
-  padding: 32px 16px 8px;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-/* ============================================
-   Stopwatch
-   ============================================ */
-.stopwatch-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  overflow: hidden;
-}
-
-.stopwatch-display {
-  font-size: 80px;
-  font-weight: 200;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -2px;
-  padding: 40px 0 30px;
-  text-align: center;
-  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-}
-
-.stopwatch-fraction {
-  font-size: 80px;
-  font-weight: 200;
-}
-
-.stopwatch-controls {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 24px;
-  margin-bottom: 20px;
-}
-
-.stopwatch-btn {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  font-size: 17px;
-  font-family: inherit;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.stopwatch-btn::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid;
-  border-color: inherit;
-}
-
-.btn-dark {
-  background: #333333;
-  color: var(--text-primary);
-  border-color: #333333;
-}
-
-.btn-green {
-  background: #0A3A1A;
-  color: var(--green);
-  border-color: #0A3A1A;
-}
-
-.btn-red {
-  background: #3A0A0A;
-  color: var(--red);
-  border-color: #3A0A0A;
-}
-
-.btn-disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.lap-list {
-  width: 100%;
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.lap-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 16px;
-  border-top: 0.5px solid var(--separator);
-  font-size: 17px;
-  font-variant-numeric: tabular-nums;
-}
-
-.lap-item.best {
-  color: var(--green);
-}
-
-.lap-item.worst {
-  color: var(--red);
-}
-
-/* ============================================
-   Timer
-   ============================================ */
-.timer-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  padding-top: 20px;
-}
-
-.timer-picker-wrapper {
-  position: relative;
-  width: 100%;
-  height: 216px;
-  overflow: hidden;
-}
-
-.timer-picker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  gap: 0;
-}
-
-.picker-column {
-  height: 216px;
-  width: 70px;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.picker-column::-webkit-scrollbar {
-  display: none;
-}
-
-.picker-item {
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 23px;
-  font-weight: 400;
-  scroll-snap-align: center;
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.picker-label {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text-primary);
-  padding: 0 4px;
-  align-self: center;
-}
-
-.picker-highlight {
-  position: absolute;
-  top: 50%;
-  left: 16px;
-  right: 16px;
-  height: 36px;
-  transform: translateY(-50%);
-  border-top: 0.5px solid var(--separator);
-  border-bottom: 0.5px solid var(--separator);
-  pointer-events: none;
-  z-index: 1;
-}
+/* Picker */
+.tm-picker-area{position:relative;width:100%;height:216px;overflow:hidden}
+.tm-picker{display:flex;align-items:center;justify-content:center;height:100%;padding:0 8px}
+.tm-col-group{display:flex;align-items:center;gap:2px}
+.tm-col{height:216px;width:60px;overflow-y:scroll;scroll-snap-type:y mandatory;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tm-col::-webkit-scrollbar{display:none}
+.tm-col-label{font-size:16px;font-weight:600;width:36px;text-align:left}
+.pk-item{height:36px;display:flex;align-items:center;justify-content:center;
+  font-size:23px;font-weight:400;scroll-snap-align:center;
+  font-variant-numeric:tabular-nums;opacity:.3;transition:opacity .15s}
+.pk-item.in-view{opacity:1}
+.pk-pad{height:90px}
+.tm-picker-hl{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+  height:36px;border-top:.5px solid var(--sep);border-bottom:.5px solid var(--sep);
+  pointer-events:none;z-index:2}
 
 /* Timer Ring */
-.timer-ring-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 20px 0 30px;
-}
+.tm-ring-area{padding:20px 0 10px;display:flex;justify-content:center}
+.tm-ring-box{position:relative;width:260px;height:260px}
+.tm-ring-svg{width:100%;height:100%}
+.tm-ring-time{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:60px;font-weight:100;font-variant-numeric:tabular-nums;letter-spacing:-1px}
 
-.timer-ring-container {
-  position: relative;
-  width: 250px;
-  height: 250px;
-}
+/* ==============================
+   모달
+   ============================== */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;
+  display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal-sheet{width:100%;max-width:430px;max-height:92vh;background:#2C2C2E;
+  border-radius:12px 12px 0 0;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:.33px solid var(--sep);flex-shrink:0}
+.modal-title{font-size:17px;font-weight:600;color:var(--t1)}
 
-.timer-ring {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
+/* Alarm Picker */
+.al-picker-area{position:relative;height:216px;overflow:hidden}
+.al-picker .tm-col{width:72px}
+.al-picker .tm-col-group{gap:0}
 
-.timer-ring-bg {
-  fill: none;
-  stroke: var(--separator);
-  stroke-width: 4;
-}
+/* Alarm Options */
+.al-options{padding:0 16px;overflow-y:auto}
+.al-opt-row{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:.33px solid var(--sep);font-size:17px}
+.al-opt-row.last{border-bottom:none}
+.al-opt-val{color:var(--t2);font-size:17px}
+.al-opt-input{background:none;border:none;color:var(--t2);font-size:17px;
+  text-align:right;font-family:inherit;outline:none;width:140px}
+.chevron{color:var(--t3);font-size:20px;margin-left:4px}
 
-.timer-ring-progress {
-  fill: none;
-  stroke: var(--orange);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-dasharray: 565.48;
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 1s linear;
-}
+/* Search */
+.search-box{padding:0 16px 8px}
+.search-field{display:flex;align-items:center;gap:6px;background:#1C1C1E;
+  border-radius:10px;padding:7px 8px}
+.search-field input{flex:1;background:none;border:none;color:var(--t1);
+  font-size:17px;font-family:inherit;outline:none}
+.search-field input::placeholder{color:var(--t2)}
+.search-icon{flex-shrink:0}
+.city-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:50vh}
+.city-row{padding:11px 16px;border-bottom:.33px solid var(--sep);font-size:17px;cursor:pointer}
+.city-row:active{background:rgba(255,255,255,.08)}
 
-.timer-ring-display {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 56px;
-  font-weight: 200;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -1px;
-}
-
-.timer-controls {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 20px 24px;
-}
-
-/* ============================================
-   Alarm Modal
-   ============================================ */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.modal-content {
-  width: 100%;
-  max-height: 90vh;
-  background: #1C1C1E;
-  border-radius: 14px 14px 0 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(20px + var(--safe-bottom));
-}
-
-.modal-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 0.5px solid var(--separator);
-  position: sticky;
-  top: 0;
-  background: #1C1C1E;
-  z-index: 1;
-}
-
-.modal-nav .nav-title {
-  font-size: 17px;
-  font-weight: 600;
-  text-align: center;
-  padding: 0;
-}
-
-.alarm-picker-wrapper {
-  position: relative;
-  height: 216px;
-  overflow: hidden;
-  padding: 0 20px;
-}
-
-.alarm-picker-col {
-  width: 80px;
-}
-
-.alarm-picker-sep {
-  padding: 0 2px;
-  font-size: 23px;
-}
-
-.alarm-options {
-  padding: 0 16px;
-}
-
-.alarm-option-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 0.5px solid var(--separator);
-  font-size: 17px;
-}
-
-.alarm-option-value {
-  color: var(--text-secondary);
-}
-
-.alarm-label-input {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 17px;
-  text-align: right;
-  font-family: inherit;
-  outline: none;
-  width: 150px;
-}
-
-/* ============================================
-   World Clock Modal
-   ============================================ */
-.search-bar {
-  padding: 0 16px 12px;
-}
-
-.search-bar input {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: none;
-  background: #2C2C2E;
-  color: var(--text-primary);
-  font-size: 17px;
-  font-family: inherit;
-  outline: none;
-}
-
-.search-bar input::placeholder {
-  color: var(--text-secondary);
-}
-
-.city-list {
-  max-height: 400px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.city-item {
-  padding: 12px 16px;
-  border-bottom: 0.5px solid var(--separator);
-  font-size: 17px;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-}
-
-.city-item:active {
-  background: #2C2C2E;
-}
-
-.city-item-name {
-  color: var(--text-primary);
-}
-
-.city-item-country {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-/* ============================================
-   Empty state
-   ============================================ */
-.empty-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: var(--text-secondary);
-  font-size: 17px;
-}
-
-/* ============================================
-   Responsive / iPhone-like constraints
-   ============================================ */
-@media (min-width: 500px) {
-  body {
-    max-width: 430px;
-    margin: 0 auto;
-    border-left: 0.5px solid var(--separator);
-    border-right: 0.5px solid var(--separator);
-  }
-  .tab-bar {
-    max-width: 430px;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .modal-overlay .modal-content {
-    max-width: 430px;
-  }
+/* ==============================
+   반응형
+   ============================== */
+@media(min-width:500px){
+  body{max-width:430px;margin:0 auto;border-left:.33px solid var(--sep);border-right:.33px solid var(--sep)}
+  .tabbar,.modal{max-width:430px;left:50%;transform:translateX(-50%)}
 }

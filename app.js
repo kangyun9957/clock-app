@@ -1,563 +1,442 @@
 // ============================================
-// iPhone Clock App - Full Functionality
+// iOS Clock App Clone
 // ============================================
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const pad = (n, d=2) => String(n).padStart(d, '0');
 
 // ---- Tab Navigation ----
-const tabItems = document.querySelectorAll('.tab-item');
-const tabContents = document.querySelectorAll('.tab-content');
-
-tabItems.forEach(item => {
-  item.addEventListener('click', () => {
-    const tabId = item.dataset.tab;
-    tabItems.forEach(t => t.classList.remove('active'));
-    tabContents.forEach(c => c.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('tab-' + tabId).classList.add('active');
+$$('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    $$('.tab').forEach(x => x.classList.remove('active'));
+    $$('.tab-content').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('#tab-' + t.dataset.tab).classList.add('active');
   });
 });
 
-// ---- Utility ----
-function padZero(n, digits = 2) {
-  return String(n).padStart(digits, '0');
+// ============================================
+// Scroll Picker
+// ============================================
+function initPicker(col, onUpdate) {
+  const type = col.dataset.type;
+  const max = parseInt(col.dataset.max || '59');
+  const min = parseInt(col.dataset.min || '0');
+  col.innerHTML = '';
+
+  let items = [];
+  if (type === 'ampm') {
+    items = ['오전', '오후'];
+  } else {
+    for (let i = min; i <= max; i++) items.push(i);
+  }
+
+  // Top padding
+  const padTop = document.createElement('div');
+  padTop.className = 'pk-pad';
+  col.appendChild(padTop);
+
+  items.forEach(val => {
+    const el = document.createElement('div');
+    el.className = 'pk-item';
+    el.textContent = (type === 'ampm') ? val : pad(val);
+    el.dataset.val = val;
+    col.appendChild(el);
+  });
+
+  // Bottom padding
+  const padBot = document.createElement('div');
+  padBot.className = 'pk-pad';
+  col.appendChild(padBot);
+
+  // Scroll listener for highlighting
+  const updateHighlight = () => {
+    const center = col.scrollTop + 108; // half of 216
+    const allItems = col.querySelectorAll('.pk-item');
+    allItems.forEach(item => {
+      const itemCenter = item.offsetTop + 18;
+      const dist = Math.abs(center - itemCenter);
+      item.classList.toggle('in-view', dist < 30);
+    });
+    if (onUpdate) onUpdate();
+  };
+
+  col.addEventListener('scroll', updateHighlight);
+  // Initial
+  setTimeout(updateHighlight, 50);
+
+  return { items, col };
 }
 
-function formatTime12(date) {
-  let h = date.getHours();
-  const m = padZero(date.getMinutes());
-  const ampm = h >= 12 ? '오후' : '오전';
-  h = h % 12 || 12;
-  return { h, m, ampm };
+function setPickerValue(col, val) {
+  const items = col.querySelectorAll('.pk-item');
+  for (const item of items) {
+    if (item.dataset.val == val) {
+      col.scrollTop = item.offsetTop - 90;
+      break;
+    }
+  }
 }
 
-// ---- World Clock ----
+function getPickerValue(col) {
+  const center = col.scrollTop + 108;
+  let closest = null, closestDist = Infinity;
+  col.querySelectorAll('.pk-item').forEach(item => {
+    const d = Math.abs((item.offsetTop + 18) - center);
+    if (d < closestDist) { closestDist = d; closest = item; }
+  });
+  return closest ? closest.dataset.val : '0';
+}
+
+// ============================================
+// 세계 시계
+// ============================================
 const CITIES = [
-  { name: '서울', timezone: 'Asia/Seoul', country: '대한민국' },
-  { name: '도쿄', timezone: 'Asia/Tokyo', country: '일본' },
-  { name: '뉴욕', timezone: 'America/New_York', country: '미국' },
-  { name: '런던', timezone: 'Europe/London', country: '영국' },
-  { name: '파리', timezone: 'Europe/Paris', country: '프랑스' },
-  { name: '시드니', timezone: 'Australia/Sydney', country: '호주' },
-  { name: '베이징', timezone: 'Asia/Shanghai', country: '중국' },
-  { name: '두바이', timezone: 'Asia/Dubai', country: '아랍에미리트' },
-  { name: '모스크바', timezone: 'Europe/Moscow', country: '러시아' },
-  { name: '로스앤젤레스', timezone: 'America/Los_Angeles', country: '미국' },
-  { name: '시카고', timezone: 'America/Chicago', country: '미국' },
-  { name: '호놀룰루', timezone: 'Pacific/Honolulu', country: '미국' },
-  { name: '싱가포르', timezone: 'Asia/Singapore', country: '싱가포르' },
-  { name: '방콕', timezone: 'Asia/Bangkok', country: '태국' },
-  { name: '뭄바이', timezone: 'Asia/Kolkata', country: '인도' },
-  { name: '카이로', timezone: 'Africa/Cairo', country: '이집트' },
-  { name: '상파울루', timezone: 'America/Sao_Paulo', country: '브라질' },
-  { name: '밴쿠버', timezone: 'America/Vancouver', country: '캐나다' },
-  { name: '베를린', timezone: 'Europe/Berlin', country: '독일' },
-  { name: '로마', timezone: 'Europe/Rome', country: '이탈리아' },
-  { name: '암스테르담', timezone: 'Europe/Amsterdam', country: '네덜란드' },
-  { name: '오클랜드', timezone: 'Pacific/Auckland', country: '뉴질랜드' },
-  { name: '자카르타', timezone: 'Asia/Jakarta', country: '인도네시아' },
-  { name: '마닐라', timezone: 'Asia/Manila', country: '필리핀' },
-  { name: '하노이', timezone: 'Asia/Ho_Chi_Minh', country: '베트남' },
+  {name:'서울',tz:'Asia/Seoul',country:'대한민국'},
+  {name:'도쿄',tz:'Asia/Tokyo',country:'일본'},
+  {name:'뉴욕',tz:'America/New_York',country:'미국'},
+  {name:'런던',tz:'Europe/London',country:'영국'},
+  {name:'파리',tz:'Europe/Paris',country:'프랑스'},
+  {name:'시드니',tz:'Australia/Sydney',country:'호주'},
+  {name:'베이징',tz:'Asia/Shanghai',country:'중국'},
+  {name:'두바이',tz:'Asia/Dubai',country:'아랍에미리트'},
+  {name:'모스크바',tz:'Europe/Moscow',country:'러시아'},
+  {name:'로스앤젤레스',tz:'America/Los_Angeles',country:'미국'},
+  {name:'시카고',tz:'America/Chicago',country:'미국'},
+  {name:'호놀룰루',tz:'Pacific/Honolulu',country:'미국'},
+  {name:'싱가포르',tz:'Asia/Singapore',country:'싱가포르'},
+  {name:'방콕',tz:'Asia/Bangkok',country:'태국'},
+  {name:'뭄바이',tz:'Asia/Kolkata',country:'인도'},
+  {name:'카이로',tz:'Africa/Cairo',country:'이집트'},
+  {name:'베를린',tz:'Europe/Berlin',country:'독일'},
+  {name:'로마',tz:'Europe/Rome',country:'이탈리아'},
+  {name:'오클랜드',tz:'Pacific/Auckland',country:'뉴질랜드'},
+  {name:'하노이',tz:'Asia/Ho_Chi_Minh',country:'베트남'},
+  {name:'마닐라',tz:'Asia/Manila',country:'필리핀'},
+  {name:'자카르타',tz:'Asia/Jakarta',country:'인도네시아'},
+  {name:'밴쿠버',tz:'America/Vancouver',country:'캐나다'},
+  {name:'상파울루',tz:'America/Sao_Paulo',country:'브라질'},
+  {name:'암스테르담',tz:'Europe/Amsterdam',country:'네덜란드'},
 ];
 
-let worldClocks = JSON.parse(localStorage.getItem('worldClocks') || '[]');
-if (worldClocks.length === 0) {
-  worldClocks = [
-    { name: '서울', timezone: 'Asia/Seoul' },
-    { name: '뉴욕', timezone: 'America/New_York' },
-    { name: '런던', timezone: 'Europe/London' },
-  ];
-  localStorage.setItem('worldClocks', JSON.stringify(worldClocks));
-}
+let myClocks = JSON.parse(localStorage.getItem('wc') || 'null') || [
+  {name:'서울',tz:'Asia/Seoul'},
+  {name:'뉴욕',tz:'America/New_York'},
+  {name:'런던',tz:'Europe/London'},
+];
 
-function getTimezoneOffset(tz) {
+function getOffset(tz) {
   const now = new Date();
-  const local = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
-  const target = new Date(now.toLocaleString('en-US', { timeZone: tz }));
-  const diff = (target - local) / (1000 * 60 * 60);
-  return diff;
+  const here = new Date(now.toLocaleString('en-US',{timeZone:'Asia/Seoul'}));
+  const there = new Date(now.toLocaleString('en-US',{timeZone:tz}));
+  return Math.round((there - here) / 3600000);
 }
 
-function renderWorldClocks() {
-  const list = document.getElementById('worldclock-list');
+function renderWC() {
+  const list = $('#wc-list');
   list.innerHTML = '';
-  worldClocks.forEach(clock => {
+  myClocks.forEach(c => {
     const now = new Date();
-    const options = { timeZone: clock.timezone, hour: 'numeric', minute: '2-digit', hour12: true };
-    const timeStr = now.toLocaleTimeString('ko-KR', options);
-    const parts = timeStr.match(/(오전|오후)\s*(\d+):(\d+)/);
-    const ampm = parts ? parts[1] : '';
-    const h = parts ? parts[2] : '';
-    const m = parts ? parts[3] : '';
+    const str = now.toLocaleTimeString('ko-KR',{timeZone:c.tz,hour:'numeric',minute:'2-digit',hour12:true});
+    const m = str.match(/(오전|오후)\s*(\d+):(\d+)/);
+    const ampm = m?m[1]:'', h = m?m[2]:'', min = m?m[3]:'';
+    const off = getOffset(c.tz);
+    const offStr = off===0?'오늘, +0시간':off>0?`오늘, +${off}시간`:`오늘, ${off}시간`;
 
-    const offset = getTimezoneOffset(clock.timezone);
-    let offsetStr = '';
-    if (offset === 0) offsetStr = '오늘, +0시간';
-    else if (offset > 0) offsetStr = `오늘, +${offset}시간`;
-    else offsetStr = `오늘, ${offset}시간`;
-
-    const item = document.createElement('div');
-    item.className = 'worldclock-item';
-    item.innerHTML = `
-      <div class="worldclock-info">
-        <span class="worldclock-offset">${offsetStr}</span>
-        <span class="worldclock-city">${clock.name}</span>
+    const el = document.createElement('div');
+    el.className = 'wc-item';
+    el.innerHTML = `
+      <div class="wc-left">
+        <div class="wc-offset">${offStr}</div>
+        <div class="wc-city">${c.name}</div>
       </div>
-      <div class="worldclock-time">${h}:${m}<span class="time-ampm">${ampm}</span></div>
-    `;
-    list.appendChild(item);
+      <div class="wc-right">
+        <span class="wc-time">${h}:${min}</span><span class="wc-ampm">${ampm}</span>
+      </div>`;
+    list.appendChild(el);
   });
 }
 
-// World clock modal
-const worldclockModal = document.getElementById('worldclock-modal');
-const citySearch = document.getElementById('city-search');
-const cityList = document.getElementById('city-list');
+renderWC();
+setInterval(renderWC, 1000);
 
-document.getElementById('worldclock-add-btn').addEventListener('click', () => {
-  worldclockModal.style.display = 'flex';
-  citySearch.value = '';
-  renderCityList('');
+// World Clock Modal
+$('#wc-add-btn').addEventListener('click', () => {
+  $('#wc-modal').classList.add('show');
+  $('#city-search').value = '';
+  renderCities('');
 });
+$('#wc-modal-cancel').addEventListener('click', () => $('#wc-modal').classList.remove('show'));
 
-document.getElementById('worldclock-cancel-btn').addEventListener('click', () => {
-  worldclockModal.style.display = 'none';
-});
+$('#city-search').addEventListener('input', e => renderCities(e.target.value));
 
-citySearch.addEventListener('input', (e) => {
-  renderCityList(e.target.value);
-});
-
-function renderCityList(query) {
-  cityList.innerHTML = '';
-  const filtered = CITIES.filter(c =>
-    c.name.includes(query) || c.country.includes(query)
-  );
-  filtered.forEach(city => {
-    const item = document.createElement('div');
-    item.className = 'city-item';
-    item.innerHTML = `<span class="city-item-name">${city.name}</span><span class="city-item-country">${city.country}</span>`;
-    item.addEventListener('click', () => {
-      if (!worldClocks.find(c => c.timezone === city.timezone)) {
-        worldClocks.push({ name: city.name, timezone: city.timezone });
-        localStorage.setItem('worldClocks', JSON.stringify(worldClocks));
-        renderWorldClocks();
+function renderCities(q) {
+  const list = $('#city-list');
+  list.innerHTML = '';
+  CITIES.filter(c => c.name.includes(q)||c.country.includes(q)).forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'city-row';
+    el.textContent = `${c.name}, ${c.country}`;
+    el.addEventListener('click', () => {
+      if (!myClocks.find(x=>x.tz===c.tz)) {
+        myClocks.push({name:c.name,tz:c.tz});
+        localStorage.setItem('wc',JSON.stringify(myClocks));
+        renderWC();
       }
-      worldclockModal.style.display = 'none';
+      $('#wc-modal').classList.remove('show');
     });
-    cityList.appendChild(item);
+    list.appendChild(el);
   });
 }
 
-// Update world clocks every second
-setInterval(renderWorldClocks, 1000);
-renderWorldClocks();
-
-
-// ---- Alarm ----
-let alarms = JSON.parse(localStorage.getItem('alarms') || '[]');
-if (alarms.length === 0) {
-  alarms = [
-    { id: 1, hour: 6, minute: 30, ampm: '오전', label: '알람', enabled: true },
-    { id: 2, hour: 7, minute: 0, ampm: '오전', label: '출근', enabled: true },
-  ];
-  localStorage.setItem('alarms', JSON.stringify(alarms));
-}
+// ============================================
+// 알람
+// ============================================
+let alarms = JSON.parse(localStorage.getItem('al') || 'null') || [
+  {id:1,h:6,m:30,ap:'오전',label:'알람',on:true},
+  {id:2,h:7,m:0,ap:'오전',label:'출근',on:true},
+];
 
 function renderAlarms() {
-  const list = document.getElementById('alarm-list');
+  const list = $('#al-list');
   list.innerHTML = '';
 
-  // "수면 | 기상" section
-  const sectionHeader = document.createElement('div');
-  sectionHeader.className = 'alarm-section-header';
-  sectionHeader.innerHTML = `
-    <svg class="bed-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 12V7a1 1 0 011-1h6a3 3 0 013 3v3h7a2 2 0 012 2v4h-2v-2H3v2H1v-6h2zm2-3a2 2 0 104 0 2 2 0 00-4 0z"/></svg>
-    <span class="alarm-section-title">수면 | 기상</span>
-  `;
-  list.appendChild(sectionHeader);
+  // 수면 | 기상 section
+  const sec = document.createElement('div');
+  sec.innerHTML = `
+    <div class="al-section">
+      <div class="al-section-ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h1l1-3h4l1 3h1v3H3v-3zm5-5a2 2 0 100-4 2 2 0 000 4zm5 2h8v1.5a2 2 0 01-2 2h-4a2 2 0 01-2-2V10z"/></svg></div>
+      <span class="al-section-title">수면 | 기상</span>
+    </div>
+    <div class="al-section-desc">수면 및 기상 시간표를 설정하려면 건강 앱에서 설정하십시오.</div>
+    <div class="al-other-title">기타</div>`;
+  list.appendChild(sec);
 
-  const desc = document.createElement('div');
-  desc.className = 'alarm-section-desc';
-  desc.textContent = '수면 및 기상 시간표를 설정하려면 건강 앱에서 설정하십시오.';
-  list.appendChild(desc);
-
-  // "기타" section
-  const otherHeader = document.createElement('div');
-  otherHeader.className = 'alarm-other-header';
-  otherHeader.textContent = '기타';
-  list.appendChild(otherHeader);
-
-  alarms.forEach(alarm => {
-    const item = document.createElement('div');
-    item.className = 'alarm-item' + (alarm.enabled ? '' : ' disabled');
-    item.innerHTML = `
-      <div class="alarm-info">
-        <div class="alarm-time-row">
-          <span class="alarm-time">${alarm.hour}:${padZero(alarm.minute)}</span>
-          <span class="alarm-ampm">${alarm.ampm}</span>
-        </div>
-        <span class="alarm-label">${alarm.label}</span>
+  alarms.forEach(a => {
+    const el = document.createElement('div');
+    el.className = 'al-item' + (a.on?'':' off');
+    el.innerHTML = `
+      <div class="al-left">
+        <div><span class="al-time">${a.h}:${pad(a.m)}</span><span class="al-ampm">${a.ap}</span></div>
+        <div class="al-label">${a.label}</div>
       </div>
-      <label class="ios-switch">
-        <input type="checkbox" ${alarm.enabled ? 'checked' : ''} data-alarm-id="${alarm.id}" />
-        <span class="slider"></span>
-      </label>
-    `;
-    const toggle = item.querySelector('input[type="checkbox"]');
-    toggle.addEventListener('change', (e) => {
-      alarm.enabled = e.target.checked;
-      localStorage.setItem('alarms', JSON.stringify(alarms));
+      <label class="toggle">
+        <input type="checkbox" ${a.on?'checked':''}>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>`;
+    el.querySelector('input').addEventListener('change', e => {
+      a.on = e.target.checked;
+      localStorage.setItem('al',JSON.stringify(alarms));
       renderAlarms();
     });
-    list.appendChild(item);
+    list.appendChild(el);
   });
 }
 
 renderAlarms();
 
-// Alarm modal
-const alarmModal = document.getElementById('alarm-modal');
-
-document.getElementById('alarm-add-btn').addEventListener('click', () => {
-  alarmModal.style.display = 'flex';
+// Alarm Modal
+$('#al-add-btn').addEventListener('click', () => {
+  $('#al-modal').classList.add('show');
   initAlarmPicker();
 });
-
-document.getElementById('alarm-cancel-btn').addEventListener('click', () => {
-  alarmModal.style.display = 'none';
-});
-
-document.getElementById('alarm-save-btn').addEventListener('click', () => {
-  const ampmCol = document.getElementById('alarm-picker-ampm');
-  const hourCol = document.getElementById('alarm-picker-hours');
-  const minCol = document.getElementById('alarm-picker-minutes');
-
-  const ampm = getPickerValue(ampmCol, ['오전', '오후']);
-  const hour = getPickerValue(hourCol, Array.from({ length: 12 }, (_, i) => i + 1));
-  const minute = getPickerValue(minCol, Array.from({ length: 60 }, (_, i) => i));
-
-  const label = document.getElementById('alarm-label-input').value || '알람';
-  const newAlarm = {
-    id: Date.now(),
-    hour: hour,
-    minute: minute,
-    ampm: ampm,
-    label: label,
-    enabled: true,
-  };
-  alarms.push(newAlarm);
-  localStorage.setItem('alarms', JSON.stringify(alarms));
+$('#al-modal-cancel').addEventListener('click', () => $('#al-modal').classList.remove('show'));
+$('#al-modal-save').addEventListener('click', () => {
+  const h = parseInt(getPickerValue($('#alpk-h')));
+  const m = parseInt(getPickerValue($('#alpk-m')));
+  const ap = getPickerValue($('#alpk-ap'));
+  const label = $('#al-label-input').value || '알람';
+  alarms.push({id:Date.now(),h,m,ap,label,on:true});
+  localStorage.setItem('al',JSON.stringify(alarms));
   renderAlarms();
-  alarmModal.style.display = 'none';
-
-  // Schedule notification
-  scheduleAlarmNotification(newAlarm);
+  $('#al-modal').classList.remove('show');
 });
-
-function scheduleAlarmNotification(alarm) {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') {
-    Notification.requestPermission();
-  }
-}
-
-// ---- Scroll Picker ----
-function createPicker(container, items, initial) {
-  container.innerHTML = '';
-  // Add padding items for scroll
-  const padCount = 2;
-  for (let i = 0; i < padCount; i++) {
-    const pad = document.createElement('div');
-    pad.className = 'picker-item';
-    pad.style.visibility = 'hidden';
-    pad.textContent = '';
-    container.appendChild(pad);
-  }
-  items.forEach((val, idx) => {
-    const item = document.createElement('div');
-    item.className = 'picker-item';
-    item.textContent = typeof val === 'number' ? padZero(val) : val;
-    item.dataset.value = val;
-    item.addEventListener('click', () => {
-      container.scrollTo({ top: idx * 36, behavior: 'smooth' });
-    });
-    container.appendChild(item);
-  });
-  for (let i = 0; i < padCount; i++) {
-    const pad = document.createElement('div');
-    pad.className = 'picker-item';
-    pad.style.visibility = 'hidden';
-    pad.textContent = '';
-    container.appendChild(pad);
-  }
-  // Set initial scroll
-  const initialIdx = items.indexOf(initial);
-  if (initialIdx >= 0) {
-    setTimeout(() => {
-      container.scrollTop = initialIdx * 36;
-    }, 50);
-  }
-}
-
-function getPickerValue(container, items) {
-  const scrollTop = container.scrollTop;
-  const idx = Math.round(scrollTop / 36);
-  return items[Math.min(Math.max(idx, 0), items.length - 1)];
-}
 
 function initAlarmPicker() {
   const now = new Date();
-  const ampmItems = ['오전', '오후'];
-  const hourItems = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minItems = Array.from({ length: 60 }, (_, i) => i);
-
-  const currentAmpm = now.getHours() >= 12 ? '오후' : '오전';
-  const currentHour = now.getHours() % 12 || 12;
-  const currentMin = now.getMinutes();
-
-  createPicker(document.getElementById('alarm-picker-ampm'), ampmItems, currentAmpm);
-  createPicker(document.getElementById('alarm-picker-hours'), hourItems, currentHour);
-  createPicker(document.getElementById('alarm-picker-minutes'), minItems, currentMin);
+  initPicker($('#alpk-h'));
+  initPicker($('#alpk-m'));
+  initPicker($('#alpk-ap'));
+  setTimeout(() => {
+    setPickerValue($('#alpk-h'), now.getHours()%12||12);
+    setPickerValue($('#alpk-m'), now.getMinutes());
+    setPickerValue($('#alpk-ap'), now.getHours()>=12?'오후':'오전');
+  }, 100);
 }
 
+// ============================================
+// 스톱워치
+// ============================================
+let swRunning = false, swStart = 0, swElapsed = 0, swTimer = null;
+let laps = [], lapStart = 0;
+const swDisp = $('#sw-display');
+const swStartBtn = $('#sw-start-btn');
+const swLapBtn = $('#sw-lap-btn');
+const swLaps = $('#sw-laps');
 
-// ---- Timer Picker ----
-function initTimerPicker() {
-  const hourItems = Array.from({ length: 24 }, (_, i) => i);
-  const minItems = Array.from({ length: 60 }, (_, i) => i);
-  const secItems = Array.from({ length: 60 }, (_, i) => i);
-
-  createPicker(document.getElementById('picker-hours'), hourItems, 0);
-  createPicker(document.getElementById('picker-minutes'), minItems, 5);
-  createPicker(document.getElementById('picker-seconds'), secItems, 0);
+function fmtSW(ms) {
+  const min = Math.floor(ms/60000);
+  const sec = Math.floor((ms%60000)/1000);
+  const cs = Math.floor((ms%1000)/10);
+  return `${pad(min)}:${pad(sec)}<span class="sw-ms">.${pad(cs)}</span>`;
+}
+function fmtLap(ms) {
+  const min = Math.floor(ms/60000);
+  const sec = Math.floor((ms%60000)/1000);
+  const cs = Math.floor((ms%1000)/10);
+  return `${pad(min)}:${pad(sec)}.${pad(cs)}`;
 }
 
-initTimerPicker();
-
-
-// ---- Stopwatch ----
-let stopwatchRunning = false;
-let stopwatchStartTime = 0;
-let stopwatchElapsed = 0;
-let stopwatchInterval = null;
-let laps = [];
-let lapStartTime = 0;
-
-const swDisplay = document.getElementById('stopwatch-display');
-const swStartBtn = document.getElementById('stopwatch-start-btn');
-const swLapBtn = document.getElementById('stopwatch-lap-btn');
-const lapList = document.getElementById('lap-list');
-
-swLapBtn.classList.add('btn-disabled');
-
-function formatStopwatch(ms) {
-  const totalSec = Math.floor(ms / 1000);
-  const min = Math.floor(totalSec / 60);
-  const sec = totalSec % 60;
-  const cent = Math.floor((ms % 1000) / 10);
-  return `${padZero(min)}:${padZero(sec)}<span class="stopwatch-fraction">.${padZero(cent)}</span>`;
-}
-
-function formatLapTime(ms) {
-  const totalSec = Math.floor(ms / 1000);
-  const min = Math.floor(totalSec / 60);
-  const sec = totalSec % 60;
-  const cent = Math.floor((ms % 1000) / 10);
-  return `${padZero(min)}:${padZero(sec)}.${padZero(cent)}`;
-}
-
-function updateStopwatch() {
-  const now = performance.now();
-  const elapsed = stopwatchElapsed + (now - stopwatchStartTime);
-  swDisplay.innerHTML = formatStopwatch(elapsed);
+function updateSW() {
+  const e = swElapsed + (performance.now() - swStart);
+  swDisp.innerHTML = fmtSW(e);
 }
 
 function renderLaps() {
-  lapList.innerHTML = '';
-  if (laps.length < 2) {
-    laps.forEach((lap, i) => {
-      const item = document.createElement('div');
-      item.className = 'lap-item';
-      item.innerHTML = `<span>랩 ${laps.length - i}</span><span>${formatLapTime(lap.time)}</span>`;
-      lapList.appendChild(item);
-    });
-    return;
-  }
-
-  const times = laps.map(l => l.time);
-  const best = Math.min(...times);
-  const worst = Math.max(...times);
-
-  laps.forEach((lap, i) => {
-    const item = document.createElement('div');
-    let cls = 'lap-item';
-    if (lap.time === best) cls += ' best';
-    else if (lap.time === worst) cls += ' worst';
-    item.className = cls;
-    item.innerHTML = `<span>랩 ${laps.length - i}</span><span>${formatLapTime(lap.time)}</span>`;
-    lapList.appendChild(item);
+  swLaps.innerHTML = '';
+  if (laps.length === 0) return;
+  const times = laps.map(l=>l.t);
+  const best = laps.length >= 2 ? Math.min(...times) : null;
+  const worst = laps.length >= 2 ? Math.max(...times) : null;
+  laps.forEach((l,i) => {
+    const el = document.createElement('div');
+    let cls = 'lap-row';
+    if (best !== null && l.t === best) cls += ' best';
+    else if (worst !== null && l.t === worst) cls += ' worst';
+    el.className = cls;
+    el.innerHTML = `<span>랩 ${laps.length-i}</span><span>${fmtLap(l.t)}</span>`;
+    swLaps.appendChild(el);
   });
 }
 
 swStartBtn.addEventListener('click', () => {
-  if (!stopwatchRunning) {
-    // Start
-    stopwatchRunning = true;
-    stopwatchStartTime = performance.now();
-    if (laps.length === 0) {
-      lapStartTime = stopwatchStartTime;
-    }
-    stopwatchInterval = setInterval(updateStopwatch, 10);
+  if (!swRunning) {
+    swRunning = true;
+    swStart = performance.now();
+    if (!laps.length) lapStart = swStart;
+    swTimer = setInterval(updateSW, 16);
     swStartBtn.textContent = '중단';
-    swStartBtn.className = 'stopwatch-btn btn-red';
+    swStartBtn.className = 'circle-btn red';
+    swStartBtn.closest('.circle-btn-ring').className = 'circle-btn-ring red-ring';
     swLapBtn.textContent = '랩';
-    swLapBtn.classList.remove('btn-disabled');
+    swLapBtn.disabled = false;
   } else {
-    // Stop
-    stopwatchRunning = false;
-    stopwatchElapsed += performance.now() - stopwatchStartTime;
-    clearInterval(stopwatchInterval);
+    swRunning = false;
+    swElapsed += performance.now() - swStart;
+    clearInterval(swTimer);
     swStartBtn.textContent = '시작';
-    swStartBtn.className = 'stopwatch-btn btn-green';
+    swStartBtn.className = 'circle-btn green';
+    swStartBtn.closest('.circle-btn-ring').className = 'circle-btn-ring green-ring';
     swLapBtn.textContent = '재설정';
   }
 });
 
 swLapBtn.addEventListener('click', () => {
-  if (stopwatchRunning) {
-    // Lap
+  if (swRunning) {
     const now = performance.now();
-    const lapTime = now - lapStartTime;
-    laps.unshift({ time: lapTime });
-    lapStartTime = now;
+    laps.unshift({t: now - lapStart});
+    lapStart = now;
     renderLaps();
-  } else if (stopwatchElapsed > 0) {
-    // Reset
-    stopwatchElapsed = 0;
-    laps = [];
-    swDisplay.innerHTML = formatStopwatch(0);
+  } else if (swElapsed > 0) {
+    swElapsed = 0; laps = [];
+    swDisp.innerHTML = fmtSW(0);
     renderLaps();
     swLapBtn.textContent = '랩';
-    swLapBtn.classList.add('btn-disabled');
+    swLapBtn.disabled = true;
   }
 });
 
+// ============================================
+// 타이머
+// ============================================
+let tmRunning = false, tmTotal = 0, tmRemain = 0, tmTimer = null;
+const CIRC = 2 * Math.PI * 92; // ~578.05
 
-// ---- Timer ----
-let timerRunning = false;
-let timerTotalSeconds = 0;
-let timerRemaining = 0;
-let timerInterval = null;
+function initTimerPickers() {
+  initPicker($('#pk-h'));
+  initPicker($('#pk-m'));
+  initPicker($('#pk-s'));
+  setTimeout(() => {
+    setPickerValue($('#pk-h'), 0);
+    setPickerValue($('#pk-m'), 5);
+    setPickerValue($('#pk-s'), 0);
+  }, 100);
+}
+initTimerPickers();
 
-const timerPickerWrapper = document.getElementById('timer-picker-wrapper');
-const timerRingWrapper = document.getElementById('timer-ring-wrapper');
-const timerDisplay = document.getElementById('timer-display');
-const timerProgress = document.getElementById('timer-ring-progress');
-const timerStartBtn = document.getElementById('timer-start-btn');
-const timerCancelBtn = document.getElementById('timer-cancel-btn');
-
-const CIRCUMFERENCE = 2 * Math.PI * 90; // ~565.48
-
-timerCancelBtn.classList.add('btn-disabled');
-
-function formatTimer(totalSec) {
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  if (h > 0) return `${padZero(h)}:${padZero(m)}:${padZero(s)}`;
-  return `${padZero(m)}:${padZero(s)}`;
+function fmtTimer(s) {
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  return h>0 ? `${pad(h)}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
 }
 
-function updateTimerRing() {
-  const fraction = timerRemaining / timerTotalSeconds;
-  const offset = CIRCUMFERENCE * (1 - fraction);
-  timerProgress.style.strokeDasharray = CIRCUMFERENCE;
-  timerProgress.style.strokeDashoffset = offset;
+function updateRing() {
+  const frac = tmRemain / tmTotal;
+  const offset = CIRC * (1 - frac);
+  $('#tm-ring-circle').setAttribute('stroke-dashoffset', offset);
+  $('#tm-ring-time').textContent = fmtTimer(tmRemain);
 }
 
-function getPickerTimerValues() {
-  const hourItems = Array.from({ length: 24 }, (_, i) => i);
-  const minItems = Array.from({ length: 60 }, (_, i) => i);
-  const secItems = Array.from({ length: 60 }, (_, i) => i);
-
-  const h = getPickerValue(document.getElementById('picker-hours'), hourItems);
-  const m = getPickerValue(document.getElementById('picker-minutes'), minItems);
-  const s = getPickerValue(document.getElementById('picker-seconds'), secItems);
-  return h * 3600 + m * 60 + s;
-}
-
-timerStartBtn.addEventListener('click', () => {
-  if (!timerRunning) {
-    if (timerRemaining <= 0) {
-      // Start from picker
-      timerTotalSeconds = getPickerTimerValues();
-      if (timerTotalSeconds <= 0) return;
-      timerRemaining = timerTotalSeconds;
+$('#tm-start-btn').addEventListener('click', () => {
+  if (!tmRunning) {
+    if (tmRemain <= 0) {
+      const h = parseInt(getPickerValue($('#pk-h')));
+      const m = parseInt(getPickerValue($('#pk-m')));
+      const s = parseInt(getPickerValue($('#pk-s')));
+      tmTotal = h*3600 + m*60 + s;
+      if (tmTotal <= 0) return;
+      tmRemain = tmTotal;
     }
-    // Show ring, hide picker
-    timerPickerWrapper.style.display = 'none';
-    timerRingWrapper.style.display = 'flex';
-    timerDisplay.textContent = formatTimer(timerRemaining);
-    updateTimerRing();
+    $('#tm-picker-area').style.display = 'none';
+    $('#tm-ring-area').style.display = 'flex';
+    updateRing();
+    tmRunning = true;
+    $('#tm-cancel-btn').disabled = false;
+    $('#tm-start-btn').textContent = '일시 정지';
+    $('#tm-start-btn').className = 'circle-btn red';
+    $('#tm-start-btn').closest('.circle-btn-ring').className = 'circle-btn-ring red-ring';
 
-    timerRunning = true;
-    timerCancelBtn.classList.remove('btn-disabled');
-    timerStartBtn.textContent = '일시 정지';
-    timerStartBtn.className = 'stopwatch-btn btn-red';
-
-    timerInterval = setInterval(() => {
-      timerRemaining--;
-      timerDisplay.textContent = formatTimer(timerRemaining);
-      updateTimerRing();
-
-      if (timerRemaining <= 0) {
-        clearInterval(timerInterval);
-        timerRunning = false;
-        timerStartBtn.textContent = '시작';
-        timerStartBtn.className = 'stopwatch-btn btn-green';
-
-        // Notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('타이머', { body: '타이머가 종료되었습니다.', icon: 'icons/icon-192.png' });
-        }
-
-        // Vibrate
-        if ('vibrate' in navigator) {
-          navigator.vibrate([200, 100, 200, 100, 200]);
-        }
-
-        // Alert as fallback
-        setTimeout(() => alert('타이머가 종료되었습니다!'), 100);
+    tmTimer = setInterval(() => {
+      tmRemain--;
+      updateRing();
+      if (tmRemain <= 0) {
+        clearInterval(tmTimer);
+        tmRunning = false;
+        $('#tm-start-btn').textContent = '시작';
+        $('#tm-start-btn').className = 'circle-btn green';
+        $('#tm-start-btn').closest('.circle-btn-ring').className = 'circle-btn-ring green-ring';
+        if ('vibrate' in navigator) navigator.vibrate([200,100,200,100,200]);
+        if ('Notification' in window && Notification.permission === 'granted')
+          new Notification('타이머',{body:'타이머가 종료되었습니다.'});
+        else alert('타이머가 종료되었습니다!');
       }
     }, 1000);
   } else {
-    // Pause
-    clearInterval(timerInterval);
-    timerRunning = false;
-    timerStartBtn.textContent = '재개';
-    timerStartBtn.className = 'stopwatch-btn btn-green';
+    clearInterval(tmTimer);
+    tmRunning = false;
+    $('#tm-start-btn').textContent = '재개';
+    $('#tm-start-btn').className = 'circle-btn green';
+    $('#tm-start-btn').closest('.circle-btn-ring').className = 'circle-btn-ring green-ring';
   }
 });
 
-timerCancelBtn.addEventListener('click', () => {
-  clearInterval(timerInterval);
-  timerRunning = false;
-  timerRemaining = 0;
-  timerTotalSeconds = 0;
-  timerPickerWrapper.style.display = '';
-  timerRingWrapper.style.display = 'none';
-  timerStartBtn.textContent = '시작';
-  timerStartBtn.className = 'stopwatch-btn btn-green';
-  timerCancelBtn.classList.add('btn-disabled');
-  initTimerPicker();
+$('#tm-cancel-btn').addEventListener('click', () => {
+  clearInterval(tmTimer);
+  tmRunning = false; tmRemain = 0; tmTotal = 0;
+  $('#tm-picker-area').style.display = '';
+  $('#tm-ring-area').style.display = 'none';
+  $('#tm-start-btn').textContent = '시작';
+  $('#tm-start-btn').className = 'circle-btn green';
+  $('#tm-start-btn').closest('.circle-btn-ring').className = 'circle-btn-ring green-ring';
+  $('#tm-cancel-btn').disabled = true;
+  initTimerPickers();
 });
 
-
-// ---- Request Notification Permission ----
-if ('Notification' in window && Notification.permission === 'default') {
+// ---- Notifications ----
+if ('Notification' in window && Notification.permission === 'default')
   Notification.requestPermission();
-}
 
-// ---- Service Worker Registration ----
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+// ---- Service Worker ----
+if ('serviceWorker' in navigator)
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
