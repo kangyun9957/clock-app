@@ -1,12 +1,12 @@
 const CACHE_NAME = 'clock-app-v1';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/app.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/clock-app/',
+  '/clock-app/index.html',
+  '/clock-app/style.css',
+  '/clock-app/app.js',
+  '/clock-app/manifest.json',
+  '/clock-app/icons/icon-192.png',
+  '/clock-app/icons/icon-512.png'
 ];
 
 self.addEventListener('install', e => {

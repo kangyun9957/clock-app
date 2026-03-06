@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  const r = s * 0.22;
+
+  // Background
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, s, s, r);
+  ctx.fill();
+
+  // Clock circle
+  const cx = s / 2, cy = s / 2, cr = s * 0.35;
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = s * 0.02;
+  ctx.beginPath();
+  ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Hour ticks
+  for (let i = 0; i < 12; i++) {
+    const angle = (i * 30 - 90) * Math.PI / 180;
+    const inner = cr * 0.85;
+    const outer = cr * 0.95;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+    ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+    ctx.lineWidth = s * 0.015;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.stroke();
+  }
+
+  // Hour hand (10:09 like Apple)
+  const hourAngle = (310 - 90) * Math.PI / 180;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(hourAngle) * cr * 0.5, cy + Math.sin(hourAngle) * cr * 0.5);
+  ctx.lineWidth = s * 0.035;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.stroke();
+
+  // Minute hand
+  const minAngle = (54 - 90) * Math.PI / 180;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(minAngle) * cr * 0.75, cy + Math.sin(minAngle) * cr * 0.75);
+  ctx.lineWidth = s * 0.025;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.stroke();
+
+  // Second hand
+  const secAngle = (0 - 90) * Math.PI / 180;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + Math.cos(secAngle) * cr * 0.8, cy + Math.sin(secAngle) * cr * 0.8);
+  ctx.lineWidth = s * 0.01;
+  ctx.strokeStyle = '#FF9F0A';
+  ctx.stroke();
+
+  // Center dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, s * 0.02, 0, Math.PI * 2);
+  ctx.fillStyle = '#FF9F0A';
+  ctx.fill();
+}
+
+drawIcon(document.getElementById('c192'));
+drawIcon(document.getElementById('c512'));
+
+// Download
+['c192', 'c512'].forEach(id => {
+  const canvas = document.getElementById(id);
+  const link = document.createElement('a');
+  link.download = `icon-${canvas.width}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+});
+</script>
+</body>
+</html>
