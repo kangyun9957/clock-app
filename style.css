@@ -63,10 +63,21 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--t1);
 
 /* ===== 스톱워치 ===== */
 .sw-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
-.sw-dial-area{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding:8px 0 0}
-#sw-canvas{width:90vw;max-width:380px;height:90vw;max-height:380px}
-.sw-dots{display:flex;gap:6px;justify-content:center;padding:8px 0 12px}
-.sw-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.3)}
+.sw-pages{display:flex;overflow-x:scroll;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  flex-shrink:0;scrollbar-width:none}
+.sw-pages::-webkit-scrollbar{display:none}
+.sw-page{min-width:100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center}
+.sw-digital-display{display:flex;align-items:center;justify-content:center;
+  height:68vw;max-height:340px;width:100%}
+.sw-digital-time{font-size:86px;font-weight:100;font-variant-numeric:tabular-nums;
+  letter-spacing:-2px;line-height:1;
+  font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif}
+.sw-digital-ms{font-size:86px;font-weight:100}
+.sw-dial-area{display:flex;align-items:center;justify-content:center;
+  height:68vw;max-height:340px;width:100%}
+#sw-canvas{width:min(88vw,340px);height:min(88vw,340px)}
+.sw-dots{display:flex;gap:6px;justify-content:center;padding:6px 0 10px;flex-shrink:0}
+.sw-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer}
 .sw-dot.active{background:rgba(255,255,255,.9)}
 
 /* Circle Buttons */

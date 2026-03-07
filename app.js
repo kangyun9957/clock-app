@@ -314,8 +314,21 @@ function drawDial() {
 let swRunning = false, swStart = 0, swElapsed = 0, swAnimFrame = null;
 let laps = [], lapStart = 0;
 
+function updateDigital() {
+  const elapsed = swElapsed + (swRunning ? (performance.now() - swStart) : 0);
+  const hrs = Math.floor(elapsed / 3600000);
+  const mins = Math.floor((elapsed % 3600000) / 60000);
+  const secs = Math.floor((elapsed % 60000) / 1000);
+  const cs = Math.floor((elapsed % 1000) / 10);
+  let str;
+  if (hrs > 0) str = `${hrs}:${pad(mins)}:${pad(secs)}<span class="sw-digital-ms">.${pad(cs)}</span>`;
+  else str = `${pad(mins)}:${pad(secs)}<span class="sw-digital-ms">.${pad(cs)}</span>`;
+  $('#sw-display').innerHTML = str;
+}
+
 function swLoop() {
   drawDial();
+  updateDigital();
   swAnimFrame = requestAnimationFrame(swLoop);
 }
 
@@ -360,7 +373,7 @@ $('#sw-start-btn').addEventListener('click', () => {
     swRunning = false;
     swElapsed += performance.now() - swStart;
     cancelAnimationFrame(swAnimFrame);
-    drawDial();
+    drawDial(); updateDigital();
     $('#sw-start-btn').textContent = '시작';
     $('#sw-start-btn').className = 'circle-btn green';
     $('#sw-start-ring').className = 'circle-btn-ring green-ring';
@@ -376,7 +389,7 @@ $('#sw-lap-btn').addEventListener('click', () => {
     renderLaps();
   } else if (swElapsed > 0) {
     swElapsed = 0; laps = [];
-    drawDial(); renderLaps();
+    drawDial(); updateDigital(); renderLaps();
     $('#sw-lap-btn').textContent = '랩';
     $('#sw-lap-btn').disabled = true;
   }
@@ -385,6 +398,18 @@ $('#sw-lap-btn').addEventListener('click', () => {
 // Initial canvas setup
 setTimeout(resizeCanvas, 50);
 window.addEventListener('resize', resizeCanvas);
+
+// Swipe pages + dots
+const swPages = $('#sw-pages');
+const swDots = $$('.sw-dot');
+swPages.addEventListener('scroll', () => {
+  const page = Math.round(swPages.scrollLeft / swPages.offsetWidth);
+  swDots.forEach((d, i) => d.classList.toggle('active', i === page));
+});
+swDots.forEach(d => d.addEventListener('click', () => {
+  const p = parseInt(d.dataset.page);
+  swPages.scrollTo({ left: p * swPages.offsetWidth, behavior: 'smooth' });
+}));
 
 // ===== 타이머 =====
 let tmRunning=false,tmTotal=0,tmRemain=0,tmTimer=null;

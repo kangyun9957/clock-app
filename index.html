@@ -47,14 +47,23 @@
   <div id="tab-stopwatch" class="tab-content">
     <div class="safe-top"></div>
     <div class="sw-wrap">
-      <!-- Analog Dial -->
-      <div class="sw-dial-area">
-        <canvas id="sw-canvas"></canvas>
-        <!-- Page dots -->
-        <div class="sw-dots">
-          <span class="sw-dot active"></span>
-          <span class="sw-dot"></span>
+      <!-- Swipeable pages -->
+      <div class="sw-pages" id="sw-pages">
+        <div class="sw-page" id="sw-page-digital">
+          <div class="sw-digital-display">
+            <span class="sw-digital-time" id="sw-display">00:00<span class="sw-digital-ms">.00</span></span>
+          </div>
         </div>
+        <div class="sw-page" id="sw-page-analog">
+          <div class="sw-dial-area">
+            <canvas id="sw-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- Page dots -->
+      <div class="sw-dots">
+        <span class="sw-dot active" data-page="0"></span>
+        <span class="sw-dot" data-page="1"></span>
       </div>
       <!-- Buttons -->
       <div class="sw-buttons">
