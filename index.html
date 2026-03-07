@@ -47,21 +47,29 @@
   <div id="tab-stopwatch" class="tab-content">
     <div class="safe-top"></div>
     <div class="sw-wrap">
-      <div class="sw-display-area">
-        <div class="sw-time" id="sw-display">00:00<span class="sw-ms">.00</span></div>
+      <!-- Analog Dial -->
+      <div class="sw-dial-area">
+        <canvas id="sw-canvas"></canvas>
+        <!-- Page dots -->
+        <div class="sw-dots">
+          <span class="sw-dot active"></span>
+          <span class="sw-dot"></span>
+        </div>
       </div>
+      <!-- Buttons -->
       <div class="sw-buttons">
         <div class="circle-btn-wrap">
-          <div class="circle-btn-ring">
+          <div class="circle-btn-ring" id="sw-lap-ring">
             <button class="circle-btn gray" id="sw-lap-btn" disabled>랩</button>
           </div>
         </div>
         <div class="circle-btn-wrap">
-          <div class="circle-btn-ring green-ring">
+          <div class="circle-btn-ring green-ring" id="sw-start-ring">
             <button class="circle-btn green" id="sw-start-btn">시작</button>
           </div>
         </div>
       </div>
+      <!-- Laps -->
       <div class="lap-list" id="sw-laps"></div>
     </div>
   </div>
@@ -69,9 +77,6 @@
   <!-- ========== 타이머 ========== -->
   <div id="tab-timer" class="tab-content">
     <div class="safe-top"></div>
-    <div class="header">
-      <h1 class="large-title" style="text-align:center;">타이머</h1>
-    </div>
     <div class="tm-wrap">
       <div class="tm-picker-area" id="tm-picker-area">
         <div class="tm-picker">
@@ -100,6 +105,10 @@
           <div class="tm-ring-time" id="tm-ring-time">00:00</div>
         </div>
       </div>
+      <div class="tm-sound-row">
+        <span>타이머 종료 시</span>
+        <span class="tm-sound-val">전파 탐지기 <span class="chevron">›</span></span>
+      </div>
       <div class="sw-buttons">
         <div class="circle-btn-wrap">
           <div class="circle-btn-ring">
@@ -125,15 +134,9 @@
       </div>
       <div class="al-picker-area">
         <div class="tm-picker al-picker">
-          <div class="tm-col-group">
-            <div class="tm-col" id="alpk-h" data-max="12" data-min="1" data-type="hour12"></div>
-          </div>
-          <div class="tm-col-group">
-            <div class="tm-col" id="alpk-m" data-max="59"></div>
-          </div>
-          <div class="tm-col-group">
-            <div class="tm-col" id="alpk-ap" data-type="ampm"></div>
-          </div>
+          <div class="tm-col-group"><div class="tm-col" id="alpk-h" data-max="12" data-min="1" data-type="hour12"></div></div>
+          <div class="tm-col-group"><div class="tm-col" id="alpk-m" data-max="59"></div></div>
+          <div class="tm-col-group"><div class="tm-col" id="alpk-ap" data-type="ampm"></div></div>
         </div>
         <div class="tm-picker-hl"></div>
       </div>
@@ -167,19 +170,30 @@
   <!-- ========== 탭 바 ========== -->
   <div class="tabbar">
     <button class="tab active" data-tab="worldclock">
-      <svg class="tab-ico" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M13 4.5V13l4.5 2.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      <div class="tab-ico-wrap">
+        <!-- Globe outline -->
+        <svg class="tab-ico" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" stroke="currentColor" stroke-width="1.3" fill="none"/><ellipse cx="13" cy="13" rx="5" ry="11" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M2.5 9.5h21M2.5 16.5h21M13 2v22" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+      </div>
       <span>세계 시계</span>
     </button>
     <button class="tab" data-tab="alarm">
-      <svg class="tab-ico" viewBox="0 0 26 28"><path d="M13 3C8.03 3 4 7.03 4 12v5l-2.2 2.8V21h22.4v-1.2L22 17v-5c0-4.97-4.03-9-9-9z" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M9.5 21.5c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+      <div class="tab-ico-wrap">
+        <!-- Alarm bell -->
+        <svg class="tab-ico" viewBox="0 0 26 26"><path d="M5.5 4L3 6.5M20.5 4L23 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M13 3C8.58 3 5 6.58 5 11v4.5L3 18v1h20v-1l-2-2.5V11c0-4.42-3.58-8-8-8z" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M10 20c0 1.66 1.34 3 3 3s3-1.34 3-3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+      </div>
       <span>알람</span>
     </button>
     <button class="tab" data-tab="stopwatch">
-      <svg class="tab-ico" viewBox="0 0 26 28"><circle cx="13" cy="15" r="10" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M13 8.5v6.5l4.2 2.5M11 2h4M13 2v3.5M20.5 6.5l1.8-1.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>
+      <div class="tab-ico-wrap">
+        <!-- Stopwatch filled when active -->
+        <svg class="tab-ico tab-ico-stopwatch" viewBox="0 0 26 28"><circle cx="13" cy="15.5" r="10" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M13 9v6.5l4 2.5M10.5 2h5M13 2v3.5M21 7l1.5-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </div>
       <span>스톱워치</span>
     </button>
     <button class="tab" data-tab="timer">
-      <svg class="tab-ico" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11.5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M13 5.5V13h6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      <div class="tab-ico-wrap">
+        <svg class="tab-ico" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M13 5.5V13h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </div>
       <span>타이머</span>
     </button>
   </div>
